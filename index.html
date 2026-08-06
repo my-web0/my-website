@@ -1,12 +1,25 @@
+
 import React, { useState, createContext, useContext } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ShoppingBag, Star, Truck, ShieldCheck, Gift, Plus, Minus, X, MessageCircle, ChevronRight } from 'lucide-react';
-import pack1Img from '@assets/d73ba41a-fcf4-4262-b4d6-3efcd4aa4b88_1786039752101.jpeg';
-import pack2Img from '@assets/09abc6e5-149c-4078-86d3-25926bce8295_1786039752102.jpeg';
-import pack3Img from '@assets/dad41d06-80a9-440f-ad82-e7fdc1c05e94_1786039752102.jpeg';
-import pack4Img from '@assets/b19857ee-5eb6-4a14-b3f7-355e46ab5ff3_1786039752102.jpeg';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Imports dyal tsawer mbadlin ──────────────────────────────────────────────
+import pack1Img from '@assets/pack1.jpg';
+import pack2Img from '@assets/pack2.jpg';
+import pack3Img from '@assets/pack3.jpg';
+import pack4Img from '@assets/pack4.jpg';
+
+// ─── Data Definitions ────────────────────────────────────────────────────────
+export const PRICE = 199;
+
+export const packs = [
+  { id: 1, name: "Black & Gold", subtitle: "L'Élégance Absolue", image: pack1Img, accent: "#D4AF37", glow: "rgba(212,175,55,0.22)", includes: ["Montre dorée premium", "Bracelets noir & or", "Collier & Boucles trèfle noir"] },
+  { id: 2, name: "Pink Romance", subtitle: "La Douceur Incarnée", image: pack2Img, accent: "#E91E8C", glow: "rgba(233,30,140,0.22)", includes: ["Montre dorée élégante", "Bracelets perles roses", "Parure cœur dorée complète"] },
+  { id: 3, name: "Red Passion", subtitle: "L'Audace Captivante", image: pack3Img, accent: "#C0392B", glow: "rgba(192,57,43,0.22)", includes: ["Bangle clou design", "Bracelets perles rouges", "Parure papillon rouge & or"] },
+  { id: 4, name: "White Elegance", subtitle: "La Pureté Intemporelle", image: pack4Img, accent: "#E8DCC8", glow: "rgba(245,240,232,0.15)", includes: ["Bracelets perles blanches", "Détails dorés raffinés", "Parure trèfle blanc & or"] },
+];
+
+// ─── Types & Cart Context ────────────────────────────────────────────────────
 interface CartItem { id: number; name: string; qty: number; price: number }
 interface CartCtx {
   items: CartItem[];
@@ -17,17 +30,20 @@ interface CartCtx {
   totalPrice: number;
 }
 
-// ─── Cart Context ─────────────────────────────────────────────────────────────
 const CartContext = createContext<CartCtx | null>(null);
-const useCart = () => useContext(CartContext)!;
 
-const PRICE = 199;
+const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) throw new Error("useCart must be used within a CartProvider");
+  return context;
+};
 
 const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addItem = (id: number) => {
-    const pack = packs.find(p => p.id === id)!;
+    const pack = packs.find(p => p.id === id);
+    if (!pack) return;
     setItems(prev => {
       const ex = prev.find(i => i.id === id);
       if (ex) return prev.map(i => i.id === id ? { ...i, qty: i.qty + 1 } : i);
@@ -52,22 +68,14 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// ─── Packs data ───────────────────────────────────────────────────────────────
-export const packs = [
-  { id: 1, name: "Black & Gold", subtitle: "L'Élégance Absolue", image: pack1Img, accent: "#D4AF37", glow: "rgba(212,175,55,0.22)", includes: ["Montre dorée premium", "Bracelets noir & or", "Collier & Boucles trèfle noir"] },
-  { id: 2, name: "Pink Romance", subtitle: "La Douceur Incarnée", image: pack2Img, accent: "#E91E8C", glow: "rgba(233,30,140,0.22)", includes: ["Montre dorée élégante", "Bracelets perles roses", "Parure cœur dorée complète"] },
-  { id: 3, name: "Red Passion", subtitle: "L'Audace Captivante", image: pack3Img, accent: "#C0392B", glow: "rgba(192,57,43,0.22)", includes: ["Bangle clou design", "Bracelets perles rouges", "Parure papillon rouge & or"] },
-  { id: 4, name: "White Elegance", subtitle: "La Pureté Intemporelle", image: pack4Img, accent: "#E8DCC8", glow: "rgba(245,240,232,0.15)", includes: ["Bracelets perles blanches", "Détails dorés raffinés", "Parure trèfle blanc & or"] },
-];
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main Component Export ───────────────────────────────────────────────────
 export const LandingPage = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   return (
     <CartProvider>
-      <div className="min-h-screen flex flex-col w-full">
+      <div className="min-h-screen flex flex-col w-full bg-background text-foreground selection:bg-primary selection:text-black">
         <NavBar onCartClick={() => setCartOpen(true)} />
         <main className="flex-1">
           <HeroSection />
@@ -76,14 +84,18 @@ export const LandingPage = () => {
           <TestimonialSection />
         </main>
         <Footer />
-        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} />
+        <CartDrawer 
+          open={cartOpen} 
+          onClose={() => setCartOpen(false)} 
+          onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} 
+        />
         <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
       </div>
     </CartProvider>
   );
 };
 
-// ─── NavBar ───────────────────────────────────────────────────────────────────
+// ─── Sub-Components ───────────────────────────────────────────────────────────
 const NavBar = ({ onCartClick }: { onCartClick: () => void }) => {
   const { totalQty } = useCart();
   return (
@@ -99,7 +111,11 @@ const NavBar = ({ onCartClick }: { onCartClick: () => void }) => {
           <Truck size={14} className="text-primary" />
           <span>Livraison Gratuite</span>
         </div>
-        <button onClick={onCartClick} className="relative flex items-center gap-2 text-xs uppercase tracking-widest border border-primary/30 px-5 py-2.5 rounded-full hover:bg-primary hover:text-black transition-all duration-500 font-semibold">
+        <button 
+          type="button" 
+          onClick={onCartClick} 
+          className="relative flex items-center gap-2 text-xs uppercase tracking-widest border border-primary/30 px-5 py-2.5 rounded-full hover:bg-primary hover:text-black transition-all duration-500 font-semibold"
+        >
           <ShoppingBag size={15} />
           <span className="hidden sm:inline">Panier</span>
           {totalQty > 0 && (
@@ -113,11 +129,11 @@ const NavBar = ({ onCartClick }: { onCartClick: () => void }) => {
   );
 };
 
-// ─── Hero Section ─────────────────────────────────────────────────────────────
 const HeroSection = () => {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+
   return (
     <section className="relative min-h-[90dvh] flex items-center justify-center pt-20 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-20">
@@ -146,14 +162,14 @@ const HeroSection = () => {
         </motion.div>
         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.6 }}
           className="pt-8 flex flex-col sm:flex-row gap-4 items-center">
-          <button onClick={() => document.getElementById('packs')?.scrollIntoView({ behavior: 'smooth' })}
+          <button type="button" onClick={() => document.getElementById('packs')?.scrollIntoView({ behavior: 'smooth' })}
             className="group relative px-8 py-4 bg-primary text-black font-semibold uppercase tracking-widest text-sm overflow-hidden flex items-center gap-3 transition-transform hover:scale-105">
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <span className="relative z-10">Découvrir les Coffrets</span>
             <ShoppingBag size={18} className="relative z-10" />
           </button>
           <div className="flex items-center gap-3 text-sm font-medium tracking-wider text-muted-foreground">
-            <span className="w-12 h-[1px] bg-primary/50" /> 199 DH SEULEMENT <span className="w-12 h-[1px] bg-primary/50" />
+            <span className="w-12 h-[1px] bg-primary/50" /> {PRICE} DH SEULEMENT <span className="w-12 h-[1px] bg-primary/50" />
           </div>
         </motion.div>
       </motion.div>
@@ -166,7 +182,6 @@ const HeroSection = () => {
   );
 };
 
-// ─── Value Proposition ────────────────────────────────────────────────────────
 const ValueProposition = () => (
   <section className="py-20 border-y border-white/5 bg-black/40">
     <div className="max-w-7xl mx-auto px-4">
@@ -189,7 +204,6 @@ const ValueProposition = () => (
   </section>
 );
 
-// ─── Packs Section ────────────────────────────────────────────────────────────
 const PacksSection = () => (
   <section id="packs" className="py-32 relative">
     <div className="max-w-7xl mx-auto px-4 md:px-8">
@@ -205,7 +219,6 @@ const PacksSection = () => (
   </section>
 );
 
-// ─── Pack Card ────────────────────────────────────────────────────────────────
 const PackCard = ({ pack, index }: { pack: typeof packs[0]; index: number }) => {
   const { items, addItem, setQty } = useCart();
   const cartItem = items.find(i => i.id === pack.id);
@@ -223,11 +236,10 @@ const PackCard = ({ pack, index }: { pack: typeof packs[0]; index: number }) => 
           style={{ boxShadow: `0 20px 40px ${pack.glow}` }}>
           <img src={pack.image} alt={pack.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-          {/* Price Badge */}
           <div className="absolute top-6 right-6">
             <div className="relative bg-black/80 backdrop-blur-md border border-primary/40 px-4 py-2 rounded-sm shadow-xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-              <span className="relative font-display text-xl text-primary font-bold tracking-wider">199 Dh</span>
+              <span className="relative font-display text-xl text-primary font-bold tracking-wider">{PRICE} Dh</span>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -241,14 +253,14 @@ const PackCard = ({ pack, index }: { pack: typeof packs[0]; index: number }) => 
         <ul className="space-y-3 mb-8 flex-1">
           {pack.includes.map((item, i) => (
             <li key={i} className="flex items-center gap-3 text-sm text-foreground/80 font-light">
-              <span className="w-1 h-1 rounded-full" style={{ backgroundColor: pack.accent }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pack.accent }} />
               {item}
             </li>
           ))}
         </ul>
 
         {qty === 0 ? (
-          <button onClick={() => addItem(pack.id)}
+          <button type="button" onClick={() => addItem(pack.id)}
             className="w-full py-4 bg-black border border-primary/50 text-primary font-bold uppercase tracking-widest text-sm relative overflow-hidden group/btn hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all hover:border-primary">
             <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
             <span className="relative z-10 flex items-center justify-center gap-2">
@@ -257,12 +269,12 @@ const PackCard = ({ pack, index }: { pack: typeof packs[0]; index: number }) => 
           </button>
         ) : (
           <div className="flex items-center border border-primary/40 overflow-hidden">
-            <button onClick={() => setQty(pack.id, qty - 1)}
+            <button type="button" onClick={() => setQty(pack.id, qty - 1)}
               className="flex-none w-12 h-12 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors border-r border-primary/30">
               <Minus size={16} />
             </button>
             <div className="flex-1 h-12 flex items-center justify-center font-display text-lg text-primary font-bold">{qty}</div>
-            <button onClick={() => setQty(pack.id, qty + 1)}
+            <button type="button" onClick={() => setQty(pack.id, qty + 1)}
               className="flex-none w-12 h-12 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors border-l border-primary/30">
               <Plus size={16} />
             </button>
@@ -273,9 +285,9 @@ const PackCard = ({ pack, index }: { pack: typeof packs[0]; index: number }) => 
   );
 };
 
-// ─── Cart Drawer ──────────────────────────────────────────────────────────────
 const CartDrawer = ({ open, onClose, onCheckout }: { open: boolean; onClose: () => void; onCheckout: () => void }) => {
   const { items, setQty, removeItem, totalQty, totalPrice } = useCart();
+
   return (
     <AnimatePresence>
       {open && (
@@ -291,7 +303,7 @@ const CartDrawer = ({ open, onClose, onCheckout }: { open: boolean; onClose: () 
                 <h2 className="font-display text-xl tracking-widest text-foreground">Mon Panier</h2>
                 {totalQty > 0 && <span className="bg-primary text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{totalQty}</span>}
               </div>
-              <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-muted-foreground hover:text-foreground transition-colors">
+              <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-muted-foreground hover:text-foreground transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -315,16 +327,16 @@ const CartDrawer = ({ open, onClose, onCheckout }: { open: boolean; onClose: () 
                             <p className="font-display text-sm tracking-wider text-foreground">{item.name}</p>
                             <p className="text-primary text-sm font-bold mt-0.5">{item.price} Dh</p>
                           </div>
-                          <button onClick={() => removeItem(item.id)} className="text-muted-foreground/50 hover:text-red-400 transition-colors">
+                          <button type="button" onClick={() => removeItem(item.id)} className="text-muted-foreground/50 hover:text-red-400 transition-colors">
                             <X size={14} />
                           </button>
                         </div>
                         <div className="flex items-center border border-white/10 w-fit">
-                          <button onClick={() => setQty(item.id, item.qty - 1)} className="w-8 h-8 flex items-center justify-center text-primary/80 hover:bg-primary/10 border-r border-white/10">
+                          <button type="button" onClick={() => setQty(item.id, item.qty - 1)} className="w-8 h-8 flex items-center justify-center text-primary/80 hover:bg-primary/10 border-r border-white/10">
                             <Minus size={12} />
                           </button>
                           <span className="w-10 h-8 flex items-center justify-center text-sm font-bold text-primary">{item.qty}</span>
-                          <button onClick={() => setQty(item.id, item.qty + 1)} className="w-8 h-8 flex items-center justify-center text-primary/80 hover:bg-primary/10 border-l border-white/10">
+                          <button type="button" onClick={() => setQty(item.id, item.qty + 1)} className="w-8 h-8 flex items-center justify-center text-primary/80 hover:bg-primary/10 border-l border-white/10">
                             <Plus size={12} />
                           </button>
                         </div>
@@ -342,7 +354,7 @@ const CartDrawer = ({ open, onClose, onCheckout }: { open: boolean; onClose: () 
                   <span className="font-display text-2xl text-primary font-bold">{totalPrice} Dh</span>
                 </div>
                 <p className="text-xs text-green-400/80 flex items-center gap-2"><Truck size={12} /> Livraison gratuite incluse</p>
-                <button onClick={onCheckout} className="w-full py-4 bg-primary text-black font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+                <button type="button" onClick={onCheckout} className="w-full py-4 bg-primary text-black font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all">
                   Commander <ChevronRight size={16} />
                 </button>
               </div>
@@ -354,7 +366,6 @@ const CartDrawer = ({ open, onClose, onCheckout }: { open: boolean; onClose: () 
   );
 };
 
-// ─── Checkout Modal ───────────────────────────────────────────────────────────
 const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const { items, totalPrice, totalQty } = useCart();
   const [form, setForm] = useState({ name: '', phone: '', address: '' });
@@ -400,12 +411,11 @@ const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                   <h2 className="font-display text-xl tracking-widest text-primary">Finaliser la Commande</h2>
                   <p className="text-muted-foreground text-xs mt-1">{totalQty} coffret(s) — {totalPrice} Dh — Livraison gratuite</p>
                 </div>
-                <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-muted-foreground hover:text-foreground">
+                <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-muted-foreground hover:text-foreground">
                   <X size={16} />
                 </button>
               </div>
 
-              {/* Récapitulatif */}
               <div className="px-6 pt-5 pb-3">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground/60 mb-3">Récapitulatif</p>
                 <div className="space-y-2">
@@ -422,13 +432,12 @@ const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }
                 </div>
               </div>
 
-              {/* Formulaire */}
               <div className="px-6 pb-6 pt-2 space-y-5">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Vos informations</p>
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-primary/70 mb-2">Nom complet</label>
-                  <input type="text" placeholder="Ex: Fatima Zahra" value={form.name}
+                  <input type="text" placeholder="Ex: Fatima Zahra" value={form.name} autoComplete="name"
                     onChange={e => { setForm(p => ({ ...p, name: e.target.value })); setErrors(p => ({ ...p, name: '' })); }}
                     className="w-full bg-zinc-900 border border-white/10 focus:border-primary/50 outline-none px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 rounded-sm" />
                   {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
@@ -436,7 +445,7 @@ const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-primary/70 mb-2">Numéro de téléphone</label>
-                  <input type="tel" placeholder="Ex: 06 12 34 56 78" value={form.phone}
+                  <input type="tel" placeholder="Ex: 06 12 34 56 78" value={form.phone} autoComplete="tel"
                     onChange={e => { setForm(p => ({ ...p, phone: e.target.value })); setErrors(p => ({ ...p, phone: '' })); }}
                     className="w-full bg-zinc-900 border border-white/10 focus:border-primary/50 outline-none px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 rounded-sm" />
                   {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
@@ -444,13 +453,13 @@ const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-primary/70 mb-2">Adresse complète</label>
-                  <textarea rows={3} placeholder="Numéro, rue, quartier, ville..." value={form.address}
+                  <textarea rows={3} placeholder="Numéro, rue, quartier, ville..." value={form.address} autoComplete="street-address"
                     onChange={e => { setForm(p => ({ ...p, address: e.target.value })); setErrors(p => ({ ...p, address: '' })); }}
                     className="w-full bg-zinc-900 border border-white/10 focus:border-primary/50 outline-none px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 resize-none rounded-sm" />
                   {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
                 </div>
 
-                <button onClick={handleOrder}
+                <button type="button" onClick={handleOrder}
                   className="w-full py-4 bg-[#25D366] text-white font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:brightness-110 transition-all rounded-sm shadow-lg">
                   <MessageCircle size={18} />
                   Confirmer via WhatsApp
@@ -468,7 +477,6 @@ const CheckoutModal = ({ open, onClose }: { open: boolean; onClose: () => void }
   );
 };
 
-// ─── Testimonial ──────────────────────────────────────────────────────────────
 const TestimonialSection = () => (
   <section className="py-24 bg-zinc-950 border-t border-white/5 relative overflow-hidden">
     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-primary/50 to-transparent" />
@@ -485,7 +493,6 @@ const TestimonialSection = () => (
   </section>
 );
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
 const Footer = () => (
   <footer className="bg-black py-12 border-t border-white/10">
     <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -493,11 +500,9 @@ const Footer = () => (
       <p className="text-muted-foreground text-sm font-light">&copy; {new Date().getFullYear()} LUXE BOX. Tous droits réservés.</p>
       <div className="flex gap-4">
         <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-primary/70 hover:text-primary cursor-pointer">
-          {/* Instagram icon */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
         </div>
         <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-primary/70 hover:text-primary cursor-pointer">
-          {/* Facebook icon */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </div>
       </div>
